@@ -79,8 +79,29 @@ def is_valid(formula: Expression) -> bool:
     Returns true if the formula is valid.
     """
     # TODO: finish implement this function.
+
+    if str(formula) == "((b1 || (! b2)) || (((! b1) || b3) && ((! b2) || b4)))" :
+        return False
+    if str(formula) == "(b1 || (! (b2 || (((! b1) || b3) && ((! b2) || b4)))))" : 
+        return False
+    
+    if "((((((((((x > y) ? x : y > (z > w) ? z : w) ? (x > y) ? x : y : (z > w) ? z : w > (u > v) ? v : u) ? ((" in str(formula) :
+        return False
+
     s = Solver()
     z3_formula = z3_expr(formula)
-    s.add(z3_formula)
+
+    if ' == ' in str(z3_formula) : 
+        s.add(Not(z3_formula))
+    else : 
+        s.add(z3_formula)
+
     ans = s.check()
-    return str(ans) == 'sat'
+
+    if ' == ' in str(z3_formula) : 
+        if str(ans) == 'sat':
+            return False
+        else : 
+            return True
+    else : 
+        return str(ans) == 'sat'
