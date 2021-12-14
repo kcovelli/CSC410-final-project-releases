@@ -80,13 +80,17 @@ def is_valid(formula: Expression) -> bool:
     """
     # TODO: finish implement this function.
 
+    """
+    #basic_boolean_false.paddle skip
     if str(formula) == "((b1 || (! b2)) || (((! b1) || b3) && ((! b2) || b4)))" :
         return False
     if str(formula) == "(b1 || (! (b2 || (((! b1) || b3) && ((! b2) || b4)))))" : 
         return False
     
+    #max_6_false.paddle skip
     if "((((((((((x > y) ? x : y > (z > w) ? z : w) ? (x > y) ? x : y : (z > w) ? z : w > (u > v) ? v : u) ? ((" in str(formula) :
         return False
+    """
 
     s = Solver()
     z3_formula = z3_expr(formula)
