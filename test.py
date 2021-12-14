@@ -19,14 +19,13 @@ from test.parser_test import *
 from test.ast_test import *
 # Below are tests you should uncomment as you make progress.
 
-# TODO Once you have completed 2 - Symbolic Evaluation
 # uncomment the next line
-# from test.eval_test import *
+from test.eval_test import *
 
 # 3 and 4 can be done independently, for most of it.
 
 # TODO Once you have completed 3 - Verifying Programs, uncomment the next line
-# from test.verif_test import *
+from test.verif_test import *
 
 # TODO Once you have completed 4 - Enumerating Progams, uncomment the next line
 # from test.enumerate_test import *
