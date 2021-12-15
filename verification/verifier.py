@@ -11,7 +11,7 @@ from lang.symb_eval import EvaluationTypeError
 
 # TODO: does anything here break if the input types are wrong? eg !x where x is an int type Paddle var?
 
-# These should return a z3 expression if x and y are both ArithRefs because of Python magic.
+# These should return a z3 expression if x and y are both z3 variables because of Python magic.
 # side note I wish Python was like Racket and let you use "λ" instead of "lambda"
 binary_funcs = {
     "+": lambda x, y: x + y,
@@ -63,7 +63,7 @@ def z3_expr(formula: Expression) -> ExprRef:
 
     # Case 5 : formula is a boolean constant
     elif isinstance(formula, (BoolConst, IntConst)):
-        return formula.value  # this might cause type issues. if not change return type hint of this function
+        return formula.value  # this might cause type issues. if not, change return type hint of this function
 
     # Case 6 : formula is GrammarInteger or GramamrVar: this should never happen during evaluation!
     elif isinstance(formula, (GrammarInteger, GrammarVar)):
@@ -78,34 +78,12 @@ def is_valid(formula: Expression) -> bool:
     """
     Returns true if the formula is valid.
     """
-    # TODO: finish implement this function.
-
-    """
-    #basic_boolean_false.paddle skip
-    if str(formula) == "((b1 || (! b2)) || (((! b1) || b3) && ((! b2) || b4)))" :
-        return False
-    if str(formula) == "(b1 || (! (b2 || (((! b1) || b3) && ((! b2) || b4)))))" : 
-        return False
-    
-    #max_6_false.paddle skip
-    if "((((((((((x > y) ? x : y > (z > w) ? z : w) ? (x > y) ? x : y : (z > w) ? z : w > (u > v) ? v : u) ? ((" in str(formula) :
-        return False
-    """
 
     s = Solver()
     z3_formula = z3_expr(formula)
 
-    if ' == ' in str(z3_formula) : 
-        s.add(Not(z3_formula))
-    else : 
-        s.add(z3_formula)
-
+    # want to check if every possible setting of variables is satisfiable, so check if negation of formula is unsat.
+    # i.e there is no possible values the variables can take that would not satisfy the formula
+    s.add(Not(z3_formula))
     ans = s.check()
-
-    if ' == ' in str(z3_formula) : 
-        if str(ans) == 'sat':
-            return False
-        else : 
-            return True
-    else : 
-        return str(ans) == 'sat'
+    return str(ans) == 'unsat'
