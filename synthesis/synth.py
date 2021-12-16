@@ -149,7 +149,7 @@ class Synthesizer():
             for assignment in self.do_derivation(product, self.ordered_rules[h], self.vars_for_hole[h], self.max_depth):
                 yield assignment
 
-    def get_next_assignment(self, h: HoleDeclaration):
+    def method_1_get_next_assignment(self, h: HoleDeclaration):
         # will return None if there are no more completions
         next_expr = next(self.generator_states[h.var.name], None)
         if next_expr is None:
@@ -167,14 +167,13 @@ class Synthesizer():
         Performs DFS search of all expressions, up to a depth of 5. When depth is reached, doubles depth and tries again
         This is not very efficient as it ends up generating the same expressions at low depths many times.
         """
+        ans = {}
         for h in self.ast.holes:
             if h.var.name not in self.generator_states.keys():
                 self.generator_states[h.var.name] = self.generate_assignments(h)
+            ans = dict(ans, **self.method_1_get_next_assignment(self.ast.holes[0]))
 
-        if len(self.ast.holes) == 1:
-            return self.get_next_assignment(self.ast.holes[0])
-        else:
-            raise NotImplementedError("Haven't implemented support for multiple holes yet")
+        return ans
 
     def synth_method_2(self, ) -> Mapping[str, Expression]:
         """
