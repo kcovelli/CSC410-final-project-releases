@@ -9,7 +9,9 @@ Open the documentation in your browser, e.g. open `docs/main.html`.
 
 # Group Members
 
-covellik, choieuji, jaggaaks
+Kevin Bruce Covelli - covellik
+Rebecca Eujin Choi - choieuji
+Akshat Jagga - jaggaaks
 
 # Roles and Tasks
 

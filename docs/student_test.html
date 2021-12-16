@@ -29,7 +29,10 @@
 <span class="kn">from</span> <span class="nn">lang.paddle</span> <span class="kn">import</span> <span class="n">parse</span>
 <span class="kn">from</span> <span class="nn">lark</span> <span class="kn">import</span> <span class="n">exceptions</span>
 <span class="kn">from</span> <span class="nn">lang.transformer</span> <span class="kn">import</span> <span class="n">TransformerVariableException</span>
-<span class="kn">from</span> <span class="nn">verification.verifier</span> <span class="kn">import</span> <span class="n">is_valid</span></pre></div>
+<span class="kn">from</span> <span class="nn">synthesis.synth</span> <span class="kn">import</span> <span class="n">Synthesizer</span>
+<span class="kn">from</span> <span class="nn">verification.verifier</span> <span class="kn">import</span> <span class="n">is_valid</span>
+
+<span class="n">ITERATIONS_LIMIT</span> <span class="o">=</span> <span class="mi">1000</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -348,7 +351,133 @@
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">is_valid</span><span class="p">(</span><span class="n">final_constraint_expr</span><span class="p">))</span>
         <span class="k">except</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;Exception was raised when verifying </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;Exception was raised when verifying </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>Taken from synth_test.py</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">main_loop_synth_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">method_num</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">ast</span> <span class="o">=</span> <span class="n">parse</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">synt</span> <span class="o">=</span> <span class="n">Synthesizer</span><span class="p">(</span><span class="n">ast</span><span class="p">)</span>
+        <span class="n">iteration</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">iteration</span> <span class="o">&lt;</span> <span class="n">ITERATIONS_LIMIT</span><span class="p">:</span>
+            <span class="n">iteration</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">method_num</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                <span class="n">hole_completions</span> <span class="o">=</span> <span class="n">synt</span><span class="o">.</span><span class="n">synth_method_3</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">method_num</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                <span class="n">hole_completions</span> <span class="o">=</span> <span class="n">synt</span><span class="o">.</span><span class="n">synth_method_2</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">hole_completions</span> <span class="o">=</span> <span class="n">synt</span><span class="o">.</span><span class="n">synth_method_1</span><span class="p">()</span>
+            <span class="n">evaluator</span> <span class="o">=</span> <span class="n">Evaluator</span><span class="p">(</span><span class="n">hole_completions</span><span class="p">)</span>
+            <span class="n">final_constraint_expr</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">ast</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_valid</span><span class="p">(</span><span class="n">final_constraint_expr</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>Taken from synth_test.py</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">testFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">testcase</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">testcase</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;TestSynth is looking for </span><span class="si">%s</span><span class="s2">, which was in the starter code.</span><span class="se">\</span>
+<span class="s2">                 Make sure file exists.&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">r1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_loop_synth_check</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+
+        <span class="n">testcase</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span>
+            <span class="n">r1</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Method 1 failed to synthesize a solution for </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">r2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_loop_synth_check</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">testcase</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">r2</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Method 2 failed to synthesize a solution for </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">r3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">main_loop_synth_check</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="n">testcase</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">r3</span><span class="p">,</span> <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;Method 3 failed to synthesize a solution for </span><span class="si">%s</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">filename</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>Simple test to check odd</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">test_example_odd_synth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/examples/odd_s.paddle&#39;</span> <span class="o">%</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <p>Successor to the absolute test</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">test_example_abs_synth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/examples/abs_2.paddle&#39;</span> <span class="o">%</span> <span class="n">Path</span><span class="p">(</span>
+            <span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      <p>Basic multiplication test</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">test_example_mul_synth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/examples/mult.paddle&#39;</span> <span class="o">%</span> <span class="n">Path</span><span class="p">(</span>
+            <span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      <p>Basic division test</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">test_example_div_synth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/examples/div.paddle&#39;</span> <span class="o">%</span> <span class="n">Path</span><span class="p">(</span>
+            <span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>Basic remainder test</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">test_example_r_synth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/examples/remainder.paddle&#39;</span> <span class="o">%</span> <span class="n">Path</span><span class="p">(</span>
+            <span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">absolute</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">testFile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
 </pre></div>
     </div>
