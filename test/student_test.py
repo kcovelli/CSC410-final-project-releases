@@ -7,8 +7,10 @@ from lang.ast import *
 from lang.paddle import parse
 from lark import exceptions
 from lang.transformer import TransformerVariableException
+from synthesis.synth import Synthesizer
 from verification.verifier import is_valid
 
+ITERATIONS_LIMIT = 1000
 
 class TestStudent(unittest.TestCase):
     # Trivial test to make sure everything's working properly.
@@ -218,3 +220,74 @@ class TestStudent(unittest.TestCase):
             self.assertTrue(is_valid(final_constraint_expr))
         except:
             self.assertFalse(True, "Exception was raised when verifying %s" % filename)
+    
+    ## Taken from synth_test.py
+    def main_loop_synth_check(self, method_num, filename):
+  
+        ast = parse(filename)
+        synt = Synthesizer(ast)
+        iteration = 0
+        while iteration < ITERATIONS_LIMIT:
+            iteration += 1
+            if method_num == 3:
+                hole_completions = synt.synth_method_3()
+            elif method_num == 2:
+                hole_completions = synt.synth_method_2()
+            else:
+                hole_completions = synt.synth_method_1()
+            evaluator = Evaluator(hole_completions)
+            final_constraint_expr = evaluator.evaluate(ast)
+            if is_valid(final_constraint_expr):
+                return True
+        return False
+    
+    ## Taken from synth_test.py
+    def testFile(self, testcase, filename):
+        testcase.assertTrue(os.path.exists(filename))
+        if not os.path.exists(filename):
+            raise Exception(
+            "TestSynth is looking for %s, which was in the starter code.\
+                 Make sure file exists." % filename)
+        r1 = self.main_loop_synth_check(1, filename)
+
+        testcase.assertTrue(
+            r1, msg="Method 1 failed to synthesize a solution for %s." % filename)
+        r2 = self.main_loop_synth_check(2, filename)
+        testcase.assertTrue(
+        r2, msg="Method 2 failed to synthesize a solution for %s." % filename)
+        r3 = self.main_loop_synth_check(3, filename)
+        testcase.assertTrue(
+        r3, msg="Method 3 failed to synthesize a solution for %s." % filename)
+
+    # Simple test to check odd
+    def test_example_odd_synth(self):
+        filename = '%s/examples/odd_s.paddle' % Path(
+            __file__).parent.parent.absolute()
+        self.testFile(self, filename)
+
+    # Successor to the absolute test
+    def test_example_abs_synth(self):
+        filename = '%s/examples/abs_2.paddle' % Path(
+            __file__).parent.parent.absolute()
+        self.testFile(self, filename)
+   
+    # Basic multiplication test
+    def test_example_mul_synth(self):
+        filename = '%s/examples/mult.paddle' % Path(
+            __file__).parent.parent.absolute()
+        self.testFile(self, filename)
+    
+    # Basic division test
+    def test_example_div_synth(self):
+        filename = '%s/examples/div.paddle' % Path(
+            __file__).parent.parent.absolute()
+        self.testFile(self, filename)
+    
+    # Basic remainder test
+    def test_example_r_synth(self):
+        filename = '%s/examples/remainder.paddle' % Path(
+            __file__).parent.parent.absolute()
+        self.testFile(self, filename)
+    
+
+        

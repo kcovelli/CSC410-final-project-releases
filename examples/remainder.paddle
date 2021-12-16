@@ -1,0 +1,6 @@
+input x : int;
+
+
+hole h : int [ G : int -> G % 7 | Var | 0 | 1 ];
+define c : int = h;
+assert (c < 7);
