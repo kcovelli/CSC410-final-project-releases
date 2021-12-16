@@ -9,10 +9,7 @@ from z3 import *
 from lang.ast import *
 from lang.symb_eval import EvaluationTypeError
 
-# TODO: does anything here break if the input types are wrong? eg !x where x is an int type Paddle var?
-
-# These should return a z3 expression if x and y are both z3 variables because of Python magic.
-# side note I wish Python was like Racket and let you use "λ" instead of "lambda"
+# These should return a z3 expression if x and y are both z3 variables
 binary_funcs = {
     "+": lambda x, y: x + y,
     "-": lambda x, y: x - y,
