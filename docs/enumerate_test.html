@@ -234,10 +234,20 @@ any GrammarVar or GrammarInteger</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-14'>#</a>
       </div>
-      <p>The map returned should be different from the previous one.
-self.assertFalse(synth_h1 == prev_h1 or synth_h2 == prev_h2 or synth_h3 == prev_h3,
-                msg=&rdquo;The synth_method_i should return a new program at every call.&rdquo;)
-Check that all the maps are well-formed, according to the checkwf function.</p>
+      <p>The map returned should be different from the previous one.</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>                    <span class="bp">self</span><span class="o">.</span><span class="n">assertFalse</span><span class="p">(</span><span class="n">synth_h1</span> <span class="o">==</span> <span class="n">prev_h1</span> <span class="ow">or</span> <span class="n">synth_h2</span> <span class="o">==</span> <span class="n">prev_h2</span> <span class="ow">or</span> <span class="n">synth_h3</span> <span class="o">==</span> <span class="n">prev_h3</span><span class="p">,</span>
+                                     <span class="n">msg</span><span class="o">=</span><span class="s2">&quot;The synth_method_i should return a new program at every call.&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>Check that all the maps are well-formed, according to the checkwf function.</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>                    <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="n">check_well_formed</span><span class="p">(</span><span class="n">ast</span><span class="p">,</span> <span class="n">synth_h1</span><span class="p">),</span>
@@ -249,10 +259,10 @@ Check that all the maps are well-formed, according to the checkwf function.</p>
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-15'>
+  <div class='section' id='section-16'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-15'>#</a>
+        <a class='octothorpe' href='#section-16'>#</a>
       </div>
       <p>Update the prev variables.</p>
     </div>
