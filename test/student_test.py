@@ -7,13 +7,16 @@ from lang.ast import *
 from lang.paddle import parse
 from lark import exceptions
 from lang.transformer import TransformerVariableException
+from verification.verifier import is_valid
 
 
 class TestStudent(unittest.TestCase):
-
+    
+    #Trivial test to make sure everything's working properly.
     def test_sanity_student(self):
         self.assertTrue(True)
 
+    # Product check with integers. 
     def test_example_prod(self):
         filename = '%s/examples/prod.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -39,33 +42,28 @@ class TestStudent(unittest.TestCase):
         except:
             self.assertFalse(True, "Exception was raised when evaluating %s" % filename)
 
+    # An advanced version of the prod example above. Contains more products of random variables.
     def test_example_prod_complex(self):
         filename = '%s/examples/prod_complex.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
             raise Exception(
-                "StudentTest is looking for %s. Make sure file exists." % filename)
+                "TestStudent is looking for %s. Make sure file exists." % filename)
 
         prog: Program = parse(filename)
         empty = Evaluator({})
         prog_res = empty.evaluate(prog)
-        # The result should be an expression
         self.assertIsInstance(prog_res, Expression)
-        # In this particular case, the expression should be a binary expression
         self.assertIsInstance(prog_res, BinaryExpr)
-        # and the operator should be &&
         self.assertEqual(prog_res.operator, BinaryOperator.EQUALS)
-        # there is only 4 variables in prog_res
         self.assertEqual(len(prog_res.uses()), 3)
-        # Evaluate the expression
         model = {"x": IntConst(1), "y": IntConst(
             2), "z": IntConst(3)}
         lhs = empty.evaluate_expr(model, prog_res.left_operand)
         rhs = empty.evaluate_expr(model, prog_res.right_operand)
-        # These expressions can be evaluated in Python directly
-        # They should be different (3 != 4)
         self.assertFalse(eval(str(lhs)) == eval(str(rhs)))
 
+    # Simple test to check whether the element is divisible by 3
     def test_example_divisible_by_3(self):
         filename = '%s/examples/divisble_by_3.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -89,6 +87,7 @@ class TestStudent(unittest.TestCase):
         except:
             self.assertFalse(True, "Exception was raised when evaluating %s" % filename)
 
+    # Subtraction checking with some manipulation
     def test_example_sub_man(self):
         filename = '%s/examples/sub_man.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -112,6 +111,7 @@ class TestStudent(unittest.TestCase):
         except:
             self.assertFalse(True, "Exception was raised when evaluating %s" % filename)
 
+    # Multiplication checking with some manipulation
     def test_example_multi_man(self):
         filename = '%s/examples/multi_man.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -134,3 +134,87 @@ class TestStudent(unittest.TestCase):
             self.assertTrue(res)
         except:
             self.assertFalse(True, "Exception was raised when evaluating %s" % filename)
+
+    # Basic bool checking
+    def test_example_bazinga(self):
+        filename = '%s/examples/bazinga.paddle' % Path(
+            __file__).parent.parent.absolute()
+        if not os.path.exists(filename):
+            raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
+        prog : Program = parse(filename)
+        try:
+            ev = Evaluator({})
+            final_constraint_expr = ev.evaluate(prog)
+        except:
+            self.assertFalse(True, "Exception was raised when parsing %s" % filename)
+        try:
+            self.assertFalse(is_valid(final_constraint_expr))
+        except:
+            self.assertFalse(True, "Exception was raised when verifying %s" % filename)
+    
+    # Test to verify the results of multiplication operator
+    def test_example_multicheck(self):
+        filename = '%s/examples/multicheck.paddle' % Path(
+            __file__).parent.parent.absolute()
+        if not os.path.exists(filename):
+            raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
+        prog : Program = parse(filename)
+        try:
+            ev = Evaluator({})
+            final_constraint_expr = ev.evaluate(prog)
+        except:
+            self.assertFalse(True, "Exception was raised when parsing %s" % filename)
+        try:
+            self.assertTrue(is_valid(final_constraint_expr))
+        except:
+            self.assertFalse(True, "Exception was raised when verifying %s" % filename)
+    
+    # Test to verify the least integer
+    def test_example_least(self):
+        filename = '%s/examples/least.paddle' % Path(
+            __file__).parent.parent.absolute()
+        if not os.path.exists(filename):
+            raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
+        prog : Program = parse(filename)
+        try:
+            ev = Evaluator({})
+            final_constraint_expr = ev.evaluate(prog)
+        except:
+            self.assertFalse(True, "Exception was raised when parsing %s" % filename)
+        try:
+            self.assertTrue(is_valid(final_constraint_expr))
+        except:
+            self.assertFalse(True, "Exception was raised when verifying %s" % filename)
+    
+    # Test to check basic bool arithmetic and precedence
+    def test_example_arithmetix(self):
+        filename = '%s/examples/arithmetix.paddle' % Path(
+            __file__).parent.parent.absolute()
+        if not os.path.exists(filename):
+            raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
+        prog : Program = parse(filename)
+        try:
+            ev = Evaluator({})
+            final_constraint_expr = ev.evaluate(prog)
+        except:
+            self.assertFalse(True, "Exception was raised when parsing %s" % filename)
+        try:
+            self.assertFalse(is_valid(final_constraint_expr))
+        except:
+            self.assertFalse(True, "Exception was raised when verifying %s" % filename)
+    
+    def test_example_arithmetix_int(self):
+        filename = '%s/examples/arithmetix_int.paddle' % Path(
+            __file__).parent.parent.absolute()
+        if not os.path.exists(filename):
+            raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
+        prog : Program = parse(filename)
+        try:
+            ev = Evaluator({})
+            final_constraint_expr = ev.evaluate(prog)
+        except:
+            self.assertFalse(True, "Exception was raised when parsing %s" % filename)
+        try:
+            self.assertTrue(is_valid(final_constraint_expr))
+        except:
+            self.assertFalse(True, "Exception was raised when verifying %s" % filename)

@@ -1,0 +1,7 @@
+input x : int;
+input y : int;
+input z : int;
+
+define hleast : int = x < y ? (x < z ? x : z) : (z < y ? z : y);
+define c : int = hleast; 
+assert (((c <= x) && (c <= y) && (c <= z)) && (c = z || c = x || c = y));

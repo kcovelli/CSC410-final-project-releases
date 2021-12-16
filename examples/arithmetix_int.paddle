@@ -1,0 +1,8 @@
+input x : int;
+input y : int;
+input z : int;
+
+define a : int = x + y - z;
+
+
+assert (a = x + y - z);

@@ -1,0 +1,3 @@
+input x : int;
+define h : int = x * x * x * x;
+assert(h = x * x * x * x);
