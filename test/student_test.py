@@ -8,11 +8,12 @@ from lang.paddle import parse
 from lark import exceptions
 from lang.transformer import TransformerVariableException
 
+
 class TestStudent(unittest.TestCase):
 
     def test_sanity_student(self):
         self.assertTrue(True)
-    
+
     def test_example_prod(self):
         filename = '%s/examples/prod.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -24,28 +25,20 @@ class TestStudent(unittest.TestCase):
         x = prog.get_var_of_name("x")
         y = prog.get_var_of_name("y")
         z = prog.get_var_of_name("z")
-        self.assertIsInstance(
-                    prog, Program, msg="prog must be an instance of Program")
+        self.assertIsInstance(prog, Program, msg="prog must be an instance of Program")
         try:
-            self.assertIsInstance(
-                        ev, Evaluator, msg="ev must be an instance of Evaluator")
+            self.assertIsInstance(ev, Evaluator, msg="ev must be an instance of Evaluator")
             expr = ev.evaluate(prog)
-            self.assertTrue(prog.is_pure_expression(expr),
-                                    msg="expr must be a pure expression")
-            model = {
-                            "x": IntConst(randint(-5, 5)),
-                            "y": IntConst(randint(-5, 5)),
-                            "z": IntConst(randint(-5, 5)),
-                        }
+            self.assertTrue(prog.is_pure_expression(expr), msg="expr must be a pure expression")
+            model = {"x": IntConst(randint(-5, 5)), "y": IntConst(randint(-5, 5)), "z": IntConst(randint(-5, 5))}
             e1 = ev.evaluate_expr(model, expr)
             self.assertTrue(prog.is_pure_expression(
                             e1), msg="Evaluation should return pure expressions")
             res = eval(pythonize(str(e1)))
             self.assertFalse(res)
         except:
-            self.assertFalse(
-                        True, "Exception was raised when evaluating %s" % filename)
-        
+            self.assertFalse(True, "Exception was raised when evaluating %s" % filename)
+
     def test_example_prod_complex(self):
         filename = '%s/examples/prod_complex.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -82,89 +75,62 @@ class TestStudent(unittest.TestCase):
         prog: Program = parse(filename)
         ev = Evaluator({})
         x = prog.get_var_of_name("x")
-        self.assertIsInstance(
-                    prog, Program, msg="prog must be an instance of Program")
+        self.assertIsInstance(prog, Program, msg="prog must be an instance of Program")
         try:
-            self.assertIsInstance(
-                        ev, Evaluator, msg="ev must be an instance of Evaluator")
+            self.assertIsInstance(ev, Evaluator, msg="ev must be an instance of Evaluator")
             expr = ev.evaluate(prog)
-            self.assertTrue(prog.is_pure_expression(expr),
-                                    msg="expr must be a pure expression")
-            model = {
-                            "x": IntConst(randint(-5, 5)),
-                    
-                        }
+            self.assertTrue(prog.is_pure_expression(expr), msg="expr must be a pure expression")
+            model = {"x": IntConst(randint(-5, 5))}
             e1 = ev.evaluate_expr(model, expr)
             self.assertTrue(prog.is_pure_expression(
                             e1), msg="Evaluation should return pure expressions")
             res = eval(pythonize(str(e1)))
             self.assertTrue(res)
         except:
-            self.assertFalse(
-                        True, "Exception was raised when evaluating %s" % filename)
-    
+            self.assertFalse(True, "Exception was raised when evaluating %s" % filename)
+
     def test_example_sub_man(self):
         filename = '%s/examples/sub_man.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
-            raise Exception(
-                "TestStudent is looking for %s. Make sure file exists." % filename)
+            raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
         prog: Program = parse(filename)
         ev = Evaluator({})
         x = prog.get_var_of_name("x")
         y = prog.get_var_of_name("y")
         z = prog.get_var_of_name("z")
-        self.assertIsInstance(
-                    prog, Program, msg="prog must be an instance of Program")
+        self.assertIsInstance(prog, Program, msg="prog must be an instance of Program")
         try:
-            self.assertIsInstance(
-                        ev, Evaluator, msg="ev must be an instance of Evaluator")
+            self.assertIsInstance(ev, Evaluator, msg="ev must be an instance of Evaluator")
             expr = ev.evaluate(prog)
-            self.assertTrue(prog.is_pure_expression(expr),
-                                    msg="expr must be a pure expression")
-            model = {
-                            "x": IntConst(randint(-5, 5)),
-                            "y": IntConst(randint(-5, 5)),
-                            "z": IntConst(randint(-5, 5)),
-                        }
+            self.assertTrue(prog.is_pure_expression(expr), msg="expr must be a pure expression")
+            model = {"x": IntConst(randint(-5, 5)), "y": IntConst(randint(-5, 5)), "z": IntConst(randint(-5, 5))}
             e1 = ev.evaluate_expr(model, expr)
-            self.assertTrue(prog.is_pure_expression(
-                            e1), msg="Evaluation should return pure expressions")
+            self.assertTrue(prog.is_pure_expression(e1), msg="Evaluation should return pure expressions")
             res = eval(pythonize(str(e1)))
             self.assertTrue(res)
         except:
-            self.assertFalse(
-                        True, "Exception was raised when evaluating %s" % filename)
-    
+            self.assertFalse(True, "Exception was raised when evaluating %s" % filename)
+
     def test_example_multi_man(self):
         filename = '%s/examples/multi_man.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
-            raise Exception(
-                "TestStudent is looking for %s. Make sure file exists." % filename)
+            raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
         prog: Program = parse(filename)
         ev = Evaluator({})
         x = prog.get_var_of_name("x")
         y = prog.get_var_of_name("y")
         z = prog.get_var_of_name("z")
-        self.assertIsInstance(
-                    prog, Program, msg="prog must be an instance of Program")
+        self.assertIsInstance(prog, Program, msg="prog must be an instance of Program")
         try:
-            self.assertIsInstance(
-                        ev, Evaluator, msg="ev must be an instance of Evaluator")
+            self.assertIsInstance(ev, Evaluator, msg="ev must be an instance of Evaluator")
             expr = ev.evaluate(prog)
-            self.assertTrue(prog.is_pure_expression(expr),
-                                    msg="expr must be a pure expression")
-            model = {
-                            "x": IntConst(randint(1, 10)),
-                            "y": IntConst(randint(1, 10)),
-                            "z": IntConst(randint(1, 10)),
-                        }
+            self.assertTrue(prog.is_pure_expression(expr), msg="expr must be a pure expression")
+            model = {"x": IntConst(randint(1, 10)), "y": IntConst(randint(1, 10)), "z": IntConst(randint(1, 10))}
             e1 = ev.evaluate_expr(model, expr)
-            self.assertTrue(prog.is_pure_expression(
-                            e1), msg="Evaluation should return pure expressions")
+            self.assertTrue(prog.is_pure_expression(e1), msg="Evaluation should return pure expressions")
             res = eval(pythonize(str(e1)))
             self.assertTrue(res)
         except:
-            self.assertFalse(
-                        True, "Exception was raised when evaluating %s" % filename)
+            self.assertFalse(True, "Exception was raised when evaluating %s" % filename)

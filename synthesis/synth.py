@@ -113,9 +113,9 @@ class Synthesizer():
                                 yield Ite(c, t, f)
 
                 elif isinstance(ex, BinaryExpr):
-                    for l in self.do_derivation(ex.left_operand, gram, available_vars):
-                        for r in self.do_derivation(ex.right_operand, gram, available_vars):
-                            yield BinaryExpr(ex.operator, l, r)
+                    for left in self.do_derivation(ex.left_operand, gram, available_vars):
+                        for right in self.do_derivation(ex.right_operand, gram, available_vars):
+                            yield BinaryExpr(ex.operator, left, right)
 
                 elif isinstance(ex, UnaryExpr):
                     for u in self.do_derivation(ex.operand, gram, available_vars):
