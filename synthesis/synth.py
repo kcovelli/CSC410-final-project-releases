@@ -67,10 +67,10 @@ class Synthesizer():
         self.ast = ast
         self.max_depth = 5
 
-    def do_derivation(self, ex: Expression,
-                      sorted_rules: Dict[Variable, List[Expression]],
-                      available_vars: Set[Variable],
-                      depth: int = 5) -> Iterator[Expression]:
+    def do_derivation_1(self, ex: Expression,
+                        sorted_rules: Dict[Variable, List[Expression]],
+                        available_vars: Set[Variable],
+                        depth: int = 5) -> Iterator[Expression]:
         """
         A generator function which, given an Expression with some non-terminals and a Grammar, eventually generates
         all possible derivations
@@ -103,25 +103,25 @@ class Synthesizer():
             # if we found a variable we can replace, generate all possible replacements
             if isinstance(ex, VarExpr) and ex.var.name == symbol.name:
                 for product in productions:
-                    for d in self.do_derivation(product, sorted_rules, available_vars, depth - 1):
+                    for d in self.do_derivation_1(product, sorted_rules, available_vars, depth - 1):
                         if depth > 0 or len(d.children()) == 0:
                             yield d
 
             else:
                 # recurse on composite expression types
                 if isinstance(ex, Ite):
-                    for c in self.do_derivation(ex.cond, sorted_rules, available_vars, depth - 1):
-                        for t in self.do_derivation(ex.true_br, sorted_rules, available_vars, depth - 1):
-                            for f in self.do_derivation(ex.false_br, sorted_rules, available_vars, depth - 1):
+                    for c in self.do_derivation_1(ex.cond, sorted_rules, available_vars, depth - 1):
+                        for t in self.do_derivation_1(ex.true_br, sorted_rules, available_vars, depth - 1):
+                            for f in self.do_derivation_1(ex.false_br, sorted_rules, available_vars, depth - 1):
                                 yield Ite(c, t, f)
 
                 elif isinstance(ex, BinaryExpr):
-                    for left in self.do_derivation(ex.left_operand, sorted_rules, available_vars, depth - 1):
-                        for right in self.do_derivation(ex.right_operand, sorted_rules, available_vars, depth - 1):
+                    for left in self.do_derivation_1(ex.left_operand, sorted_rules, available_vars, depth - 1):
+                        for right in self.do_derivation_1(ex.right_operand, sorted_rules, available_vars, depth - 1):
                             yield BinaryExpr(ex.operator, left, right)
 
                 elif isinstance(ex, UnaryExpr):
-                    for u in self.do_derivation(ex.operand, sorted_rules, available_vars, depth - 1):
+                    for u in self.do_derivation_1(ex.operand, sorted_rules, available_vars, depth - 1):
                         yield UnaryExpr(ex.operator, u)
 
                 # never should have gotten
@@ -138,7 +138,77 @@ class Synthesizer():
             return
             # raise ASTException(f"could not replace all non terminals in {ex} with the grammar {gram}")
 
-    def generate_assignments(self, hole: HoleDeclaration) -> Iterator[Expression]:
+    def do_derivation_2(self, ex: Expression,
+                        sorted_rules: Dict[Variable, List[Expression]],
+                        available_vars: Set[Variable],
+                        depth: int = 5) -> Iterator[Expression]:
+        """
+        A generator function which, given an Expression with some non-terminals and a Grammar, eventually generates
+        all possible derivations
+        """
+        if depth < 0:
+            return
+        # Handle the Var, Integer, or constant cases
+        if isinstance(ex, GrammarVar):
+            for v in available_vars:
+                yield VarExpr(v)
+            return
+        elif isinstance(ex, GrammarInteger):
+            for i in range(-10, 10):  # this is very stupid
+                yield IntConst(i)
+            return
+        elif len(ex.uses()) == 0:  # this is a constant expression so can just return ex
+            yield ex
+            return
+
+        # if none of the above cases apply, then we can likely apply one of the production rules in gram
+        # note that just because len(ex.uses()) > 0 doesn't mean there must be some non terminals, could be given
+        # an expression like (x1+1). ex.uses() would contain x1 even though it's not a non-terminal
+        found_valid_rule = False
+        for symbol, productions in sorted_rules.items():
+            # this rule does not apply to this expression
+            if symbol not in ex.uses():
+                continue
+            found_valid_rule = True
+
+            # if we found a variable we can replace, generate all possible replacements
+            if isinstance(ex, VarExpr) and ex.var.name == symbol.name:
+                for product in productions:
+                    for d in self.do_derivation_1(product, sorted_rules, available_vars, depth - 1):
+                        if depth > 0 or len(d.children()) == 0:
+                            yield d
+
+            else:
+                # recurse on composite expression types
+                if isinstance(ex, Ite):
+                    for f in self.do_derivation_1(ex.false_br, sorted_rules, available_vars, depth - 1):
+                        for t in self.do_derivation_1(ex.true_br, sorted_rules, available_vars, depth - 1):
+                            for c in self.do_derivation_1(ex.cond, sorted_rules, available_vars, depth - 1):
+                                yield Ite(c, t, f)
+
+                elif isinstance(ex, BinaryExpr):
+                    for right in self.do_derivation_1(ex.right_operand, sorted_rules, available_vars, depth - 1):
+                        for left in self.do_derivation_1(ex.left_operand, sorted_rules, available_vars, depth - 1):
+                            yield BinaryExpr(ex.operator, left, right)
+
+                elif isinstance(ex, UnaryExpr):
+                    for u in self.do_derivation_1(ex.operand, sorted_rules, available_vars, depth - 1):
+                        yield UnaryExpr(ex.operator, u)
+
+                # never should have gotten
+                elif isinstance(ex, (IntConst, BoolConst)):
+                    raise ASTException("Somehow tried to do derivation on a constant expression")
+                else:
+                    raise ASTException(f"Unexpected expression type {ex.__class__()} for {ex}")
+
+                return
+
+        # no rules in the given grammar apply to this expression, so just return
+        if not found_valid_rule:
+            yield ex
+            return
+
+    def generate_assignments(self, hole: HoleDeclaration, derivation_func) -> Iterator[Expression]:
         """
         Generator function that generates all possible assignments for the given hole.
         Assignments will be generated breadth first
@@ -146,15 +216,15 @@ class Synthesizer():
         # always start from the first production rule
         for product in hole.grammar.rules[0].productions:
             h = hole.var.name
-            for assignment in self.do_derivation(product, self.ordered_rules[h], self.vars_for_hole[h], self.max_depth):
+            for assignment in derivation_func(product, self.ordered_rules[h], self.vars_for_hole[h], self.max_depth):
                 yield assignment
 
-    def method_1_get_next_assignment(self, h: HoleDeclaration):
+    def get_next_assignment(self, h: HoleDeclaration, derivation_func):
         # will return None if there are no more completions
         next_expr = next(self.generator_states[h.var.name], None)
         if next_expr is None:
             self.max_depth *= 2
-            self.generator_states[h.var.name] = self.generate_assignments(h)
+            self.generator_states[h.var.name] = self.generate_assignments(h, derivation_func)
             next_expr = next(self.generator_states[h.var.name], None)
         # print(next_expr)
         return {h.var.name: next_expr}
@@ -170,8 +240,8 @@ class Synthesizer():
         ans = {}
         for h in self.ast.holes:
             if h.var.name not in self.generator_states.keys():
-                self.generator_states[h.var.name] = self.generate_assignments(h)
-            ans = dict(ans, **self.method_1_get_next_assignment(self.ast.holes[0]))
+                self.generator_states[h.var.name] = self.generate_assignments(h, self.do_derivation_1)
+            ans = dict(ans, **self.get_next_assignment(self.ast.holes[0], self.do_derivation_1))
 
         return ans
 
@@ -183,7 +253,13 @@ class Synthesizer():
         Ran out of time but would have liked to implement a BFS instead of DFS. This should have generated smaller,
         simpler expressions first, which would probably be more likely to be correct.
         """
-        return self.synth_method_1()
+        ans = {}
+        for h in self.ast.holes:
+            if h.var.name not in self.generator_states.keys():
+                self.generator_states[h.var.name] = self.generate_assignments(h, self.do_derivation_2)
+            ans = dict(ans, **self.get_next_assignment(self.ast.holes[0], self.do_derivation_2))
+
+        return ans
 
     def synth_method_3(self, ) -> Mapping[str, Expression]:
         """
@@ -191,6 +267,7 @@ class Synthesizer():
         to an expression (method 3).
 
         Ran out of time unfortunately, but would have liked to try putting all grammars in Chomsky Normal Form
-        to guarantee we dont generate the same expression multiple times
+        to guarantee we dont generate the same expression multiple times, and to to implement a BFS instead of DFS.
+        This should have generated smaller, simpler expressions first, which would probably be more likely to be correct
         """
-        return self.synth_method_1()
+        return self.synth_method_2()
