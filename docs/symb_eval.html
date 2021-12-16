@@ -169,7 +169,6 @@ be used as the definition of the environment.
             <span class="n">operator</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">operator</span>
             <span class="n">lhs</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">left_operand</span>
             <span class="n">rhs</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">right_operand</span>
-
             <span class="n">lhs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_expr</span><span class="p">(</span><span class="n">var_defs</span><span class="p">,</span> <span class="n">lhs</span><span class="p">)</span>
             <span class="n">rhs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_expr</span><span class="p">(</span><span class="n">var_defs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">BinaryExpr</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span></pre></div>
@@ -187,7 +186,6 @@ be used as the definition of the environment.
       <div class="highlight"><pre>        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">UnaryExpr</span><span class="p">):</span>
             <span class="n">operator</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">operator</span>
             <span class="n">operand</span> <span class="o">=</span> <span class="n">ex</span><span class="o">.</span><span class="n">operand</span>
-
             <span class="n">operand</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">evaluate_expr</span><span class="p">(</span><span class="n">var_defs</span><span class="p">,</span> <span class="n">operand</span><span class="p">)</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">UnaryExpr</span><span class="p">(</span><span class="n">operator</span><span class="p">,</span> <span class="n">operand</span><span class="p">)</span></pre></div>
     </div>

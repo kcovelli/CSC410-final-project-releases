@@ -34,20 +34,7 @@ of the assignment.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-1'>#</a>
       </div>
-      <p>TODO: does anything here break if the input types are wrong? eg !x where x is an int type Paddle var?</p>
-    </div>
-    <div class='code'>
-      <div class="highlight"><pre></pre></div>
-    </div>
-  </div>
-  <div class='clearall'></div>
-  <div class='section' id='section-2'>
-    <div class='docs'>
-      <div class='octowrap'>
-        <a class='octothorpe' href='#section-2'>#</a>
-      </div>
-      <p>These should return a z3 expression if x and y are both z3 variables because of Python magic.
-side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead of &ldquo;lambda&rdquo;</p>
+      <p>These should return a z3 expression if x and y are both z3 variables</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre><span class="n">binary_funcs</span> <span class="o">=</span> <span class="p">{</span>
@@ -73,10 +60,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-3'>
+  <div class='section' id='section-2'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-3'>#</a>
+        <a class='octothorpe' href='#section-2'>#</a>
       </div>
       
     </div>
@@ -85,10 +72,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-4'>
+  <div class='section' id='section-3'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-4'>#</a>
+        <a class='octothorpe' href='#section-3'>#</a>
       </div>
       <p>Case 1 : formula is a binary expression.</p>
     </div>
@@ -100,10 +87,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-5'>
+  <div class='section' id='section-4'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-5'>#</a>
+        <a class='octothorpe' href='#section-4'>#</a>
       </div>
       <p>Case 2 : formula is a unary expression.</p>
     </div>
@@ -113,10 +100,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-6'>
+  <div class='section' id='section-5'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-6'>#</a>
+        <a class='octothorpe' href='#section-5'>#</a>
       </div>
       <p>Case 3 : formula is a if-then-else expression (a ternary expression).</p>
     </div>
@@ -128,10 +115,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-7'>
+  <div class='section' id='section-6'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-7'>#</a>
+        <a class='octothorpe' href='#section-6'>#</a>
       </div>
       <p>Case 4: formula is a variable</p>
     </div>
@@ -146,10 +133,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-8'>
+  <div class='section' id='section-7'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-8'>#</a>
+        <a class='octothorpe' href='#section-7'>#</a>
       </div>
       <p>Case 5 : formula is a boolean or integer constant</p>
     </div>
@@ -159,10 +146,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-9'>
+  <div class='section' id='section-8'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-9'>#</a>
+        <a class='octothorpe' href='#section-8'>#</a>
       </div>
       <p>Case 6 : formula is GrammarInteger or GramamrVar: this should never happen during evaluation!</p>
     </div>
@@ -172,10 +159,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-10'>
+  <div class='section' id='section-9'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-10'>#</a>
+        <a class='octothorpe' href='#section-9'>#</a>
       </div>
       <p>Case 7 should never be reached.</p>
     </div>
@@ -185,10 +172,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-11'>
+  <div class='section' id='section-10'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-11'>#</a>
+        <a class='octothorpe' href='#section-10'>#</a>
       </div>
       <p>Returns true if the formula is valid.</p>
     </div>
@@ -197,10 +184,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-12'>
+  <div class='section' id='section-11'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-12'>#</a>
+        <a class='octothorpe' href='#section-11'>#</a>
       </div>
       
     </div>
@@ -210,10 +197,10 @@ side note I wish Python was like Racket and let you use &ldquo;λ&rdquo; instead
     </div>
   </div>
   <div class='clearall'></div>
-  <div class='section' id='section-13'>
+  <div class='section' id='section-12'>
     <div class='docs'>
       <div class='octowrap'>
-        <a class='octothorpe' href='#section-13'>#</a>
+        <a class='octothorpe' href='#section-12'>#</a>
       </div>
       <p>want to check if every possible setting of variables is satisfiable, so check if negation of formula is unsat.
 i.e there is no possible values the variables can take that would not satisfy the formula</p>
