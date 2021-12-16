@@ -76,7 +76,7 @@ class Synthesizer():
         # Handle the Var, Integer, or constant cases
         if isinstance(ex, GrammarVar):
             for v in available_vars:
-                yield v
+                yield VarExpr(v)
             return
         elif isinstance(ex, GrammarInteger):
             for i in range(-10, 10):  # TODO: make this not stupid
@@ -135,7 +135,7 @@ class Synthesizer():
             return
             # raise ASTException(f"could not replace all non terminals in {ex} with the grammar {gram}")
 
-    def generate_assignments(self, hole: HoleDeclaration)-> Iterator[Expression]:
+    def generate_assignments(self, hole: HoleDeclaration) -> Iterator[Expression]:
         """
         Generator function that generates all possible assignments for the given hole.
         Assignments will be generated breadth first
@@ -144,7 +144,6 @@ class Synthesizer():
         for product in hole.grammar.rules[0].productions:
             for assignment in self.do_derivation(product, hole.grammar, self.vars_for_hole[hole.var.name]):
                 yield assignment
-
 
     def synth_method_1(self, ) -> Mapping[str, Expression]:
         """
@@ -164,11 +163,6 @@ class Synthesizer():
             return {h.var.name: next_expr}
         else:
             raise NotImplementedError("Haven't implemented support for multiple holes yet")
-
-
-        # # TODO : complete this method
-        # return {h: next(self.generate_assignments(h)) for h in self.ast.holes}
-        # # raise Exception("Synth.Synthesizer.synth_method_1 is not implemented.")
 
     def synth_method_2(self, ) -> Mapping[str, Expression]:
         """
