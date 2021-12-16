@@ -3,6 +3,6 @@ input y : int;
 input z : int;
 // Holes
 define a : int = x * z;
-define h : int = a + x + y;
+define h : int = a + x + y + z;
 define c : int = h;
-assert (c = z + x + y);
+assert (c = z + x + y + 1);
