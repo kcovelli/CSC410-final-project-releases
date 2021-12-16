@@ -250,8 +250,7 @@ class Synthesizer():
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 2).
 
-        Ran out of time but would have liked to implement a BFS instead of DFS. This should have generated smaller,
-        simpler expressions first, which would probably be more likely to be correct.
+        Reversed the order of expression expansion compared to synth_method_1. May perform differently in some cases
         """
         ans = {}
         for h in self.ast.holes:
