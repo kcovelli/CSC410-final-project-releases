@@ -60,29 +60,23 @@ class Synthesizer():
         """
         self.vars_for_hole = {h.var.name: ast.hole_can_use(h.var.name) for h in ast.holes}
         self.generator_states = {}
-        self.ordered_rules = {h.var.name:
-                                  {r.symbol:
-                                       sorted(r.productions, key=lambda p: len(p.children()))
-                                   for r in h.grammar.rules
-                                   }
-                              for h in ast.holes
-                              }
+        self.ordered_rules = {
+            h.var.name: {r.symbol: sorted(r.productions, key=lambda p: len(p.children())) for r in h.grammar.rules} for
+            h in ast.holes}
         # The synthesizer is initialized with the program ast it needs
         # to synthesize hole completions for.
         self.ast = ast
 
-    # TODO: implement something that allows you to remember which
-    # programs have already been generated.
-
     def do_derivation(self, ex: Expression,
                       sorted_rules: Dict[Variable, List[Expression]],
                       available_vars: Set[Variable],
-                      depth: int = 2) -> Iterator[Expression]:
+                      depth: int = 5) -> Iterator[Expression]:
         """
         A generator function which, given an Expression with some non-terminals and a Grammar, eventually generates
         all possible derivations
         """
-
+        if depth < 0:
+            return
         # Handle the Var, Integer, or constant cases
         if isinstance(ex, GrammarVar):
             for v in available_vars:
@@ -96,9 +90,6 @@ class Synthesizer():
             yield ex
             return
 
-        if depth <= 0:
-            yield ex
-            return
 
         # if none of the above cases apply, then we can likely apply one of the production rules in gram
         # note that just because len(ex.uses()) > 0 doesn't mean there must be some non terminals, could be given
@@ -120,18 +111,18 @@ class Synthesizer():
             else:
                 # recurse on composite expression types
                 if isinstance(ex, Ite):
-                    for c in self.do_derivation(ex.cond, sorted_rules, available_vars, depth):
-                        for t in self.do_derivation(ex.true_br, sorted_rules, available_vars, depth):
-                            for f in self.do_derivation(ex.false_br, sorted_rules, available_vars, depth):
+                    for c in self.do_derivation(ex.cond, sorted_rules, available_vars, depth - 1):
+                        for t in self.do_derivation(ex.true_br, sorted_rules, available_vars, depth - 1):
+                            for f in self.do_derivation(ex.false_br, sorted_rules, available_vars, depth - 1):
                                 yield Ite(c, t, f)
 
                 elif isinstance(ex, BinaryExpr):
-                    for left in self.do_derivation(ex.left_operand, sorted_rules, available_vars, depth):
-                        for right in self.do_derivation(ex.right_operand, sorted_rules, available_vars, depth):
+                    for left in self.do_derivation(ex.left_operand, sorted_rules, available_vars, depth - 1):
+                        for right in self.do_derivation(ex.right_operand, sorted_rules, available_vars, depth - 1):
                             yield BinaryExpr(ex.operator, left, right)
 
                 elif isinstance(ex, UnaryExpr):
-                    for u in self.do_derivation(ex.operand, sorted_rules, available_vars, depth):
+                    for u in self.do_derivation(ex.operand, sorted_rules, available_vars, depth - 1):
                         yield UnaryExpr(ex.operator, u)
 
                 # never should have got here since ex.uses() would be empty
