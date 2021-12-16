@@ -9,13 +9,15 @@ Open the documentation in your browser, e.g. open `docs/main.html`.
 
 # Group Members
 
-TODO: Remove me, and write the names and UTORids of the group members.
+covellik, choieuji, jaggaaks
 
 # Roles and Tasks
 
-TODO: Remove me, and write a *very brief* description of what each team member
-did in the project.
-
+- Part 1 - Reading - covellik, choieuji, jaggaaks
+- Part 2 - Coding and Debugging - covellik
+- Part 3 - Coding and Debugging - covellik, choieuji
+- Part 4 - Coding and Debugging - covellik, choieuji
+- Part 5 - Coding and Debugging - jaggaaks
 ---
 
 Good luck, you'll be writing your first program synthesizer!
