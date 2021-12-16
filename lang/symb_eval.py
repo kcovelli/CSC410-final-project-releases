@@ -52,7 +52,6 @@ class Evaluator():
             operator = ex.operator
             lhs = ex.left_operand
             rhs = ex.right_operand
-
             lhs = self.evaluate_expr(var_defs, lhs)
             rhs = self.evaluate_expr(var_defs, rhs)
             result = BinaryExpr(operator, lhs, rhs)
@@ -61,7 +60,6 @@ class Evaluator():
         elif isinstance(ex, UnaryExpr):
             operator = ex.operator
             operand = ex.operand
-
             operand = self.evaluate_expr(var_defs, operand)
             result = UnaryExpr(operator, operand)
 
