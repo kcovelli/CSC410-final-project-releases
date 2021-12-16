@@ -20,18 +20,18 @@ from test.ast_test import *
 # Below are tests you should uncomment as you make progress.
 
 # uncomment the next line
-from test.eval_test import *
+# from test.eval_test import *
 
 # 3 and 4 can be done independently, for most of it.
 
 # TODO Once you have completed 3 - Verifying Programs, uncomment the next line
-from test.verif_test import *
+# from test.verif_test import *
 
 # TODO Once you have completed 4 - Enumerating Progams, uncomment the next line
 # from test.enumerate_test import *
 
 # TODO Once you have completed 3 and 4, uncomment the next line.
-# from test.synth_test import *
+from test.synth_test import *
 # You should also check on some input files that the correct
 # program is synthesized.
 

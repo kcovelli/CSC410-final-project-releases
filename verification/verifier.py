@@ -61,7 +61,7 @@ def z3_expr(formula: Expression) -> ExprRef:
         else:
             raise EvaluationTypeError(f"Unknown variable type {formula.var.type} for {formula.name}")
 
-    # Case 5 : formula is a boolean constant
+    # Case 5 : formula is a boolean or integer constant
     elif isinstance(formula, (BoolConst, IntConst)):
         return formula.value  # this might cause type issues. if not, change return type hint of this function
 
