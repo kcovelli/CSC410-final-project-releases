@@ -156,7 +156,7 @@ class Synthesizer():
             self.max_depth *= 2
             self.generator_states[h.var.name] = self.generate_assignments(h)
             next_expr = next(self.generator_states[h.var.name], None)
-        print(next_expr)
+        # print(next_expr)
         return {h.var.name: next_expr}
 
     def synth_method_1(self, ) -> Mapping[str, Expression]:
@@ -180,9 +180,9 @@ class Synthesizer():
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 2).
 
-        **TODO: write a description of your approach in this method.**
+        Ran out of time but would have liked to implement a BFS instead of DFS. This should have generated smaller,
+        simpler expressions first, which would probably be more likely to be correct.
         """
-        # TODO : complete this method
         return self.synth_method_1()
         # raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
 
