@@ -184,7 +184,6 @@ class Synthesizer():
         simpler expressions first, which would probably be more likely to be correct.
         """
         return self.synth_method_1()
-        # raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
 
     def synth_method_3(self, ) -> Mapping[str, Expression]:
         """
@@ -194,6 +193,4 @@ class Synthesizer():
         Ran out of time unfortunately, but would have liked to try putting all grammars in Chomsky Normal Form
         to guarantee we dont generate the same expression multiple times
         """
-        # TODO : complete this method
         return self.synth_method_1()
-        # raise Exception("Synth.synth_method_3 is not implemented.")
