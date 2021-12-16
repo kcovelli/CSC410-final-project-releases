@@ -51,7 +51,6 @@ class Synthesizer():
     e.g. `prog.hole_can_use("h1")` returns the variables that "h1" can use.
     """
 
-    # TODO: put all grammars in Chomsky Normal Form, will guarantee we don't duplicate any derivations
     def __init__(self, ast: Program):
         """
         Initialize the Synthesizer.
@@ -66,6 +65,7 @@ class Synthesizer():
         # The synthesizer is initialized with the program ast it needs
         # to synthesize hole completions for.
         self.ast = ast
+        self.max_depth = 5
 
     def do_derivation(self, ex: Expression,
                       sorted_rules: Dict[Variable, List[Expression]],
@@ -83,7 +83,7 @@ class Synthesizer():
                 yield VarExpr(v)
             return
         elif isinstance(ex, GrammarInteger):
-            for i in range(-10, 10):  # TODO: make this not stupid
+            for i in range(-10, 10):  # this is very stupid
                 yield IntConst(i)
             return
         elif len(ex.uses()) == 0:  # this is a constant expression so can just return ex
@@ -124,7 +124,7 @@ class Synthesizer():
                     for u in self.do_derivation(ex.operand, sorted_rules, available_vars, depth - 1):
                         yield UnaryExpr(ex.operator, u)
 
-                # never should have got here since ex.uses() would be empty
+                # never should have gotten
                 elif isinstance(ex, (IntConst, BoolConst)):
                     raise ASTException("Somehow tried to do derivation on a constant expression")
                 else:
@@ -132,7 +132,7 @@ class Synthesizer():
 
                 return
 
-        # no rules in the given grammar apply to this expression, so just return the expression
+        # no rules in the given grammar apply to this expression, so just return
         if not found_valid_rule:
             yield ex
             return
@@ -146,26 +146,33 @@ class Synthesizer():
         # always start from the first production rule
         for product in hole.grammar.rules[0].productions:
             h = hole.var.name
-            for assignment in self.do_derivation(product, self.ordered_rules[h], self.vars_for_hole[h]):
+            for assignment in self.do_derivation(product, self.ordered_rules[h], self.vars_for_hole[h], self.max_depth):
                 yield assignment
+
+    def get_next_assignment(self, h: HoleDeclaration):
+        # will return None if there are no more completions
+        next_expr = next(self.generator_states[h.var.name], None)
+        if next_expr is None:
+            self.max_depth *= 2
+            self.generator_states[h.var.name] = self.generate_assignments(h)
+            next_expr = next(self.generator_states[h.var.name], None)
+        print(next_expr)
+        return {h.var.name: next_expr}
 
     def synth_method_1(self, ) -> Mapping[str, Expression]:
         """
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 1).
 
-        **TODO: write a description of your approach in this method.**
+        Performs DFS search of all expressions, up to a depth of 5. When depth is reached, doubles depth and tries again
+        This is not very efficient as it ends up generating the same expressions at low depths many times.
         """
         for h in self.ast.holes:
             if h.var.name not in self.generator_states.keys():
                 self.generator_states[h.var.name] = self.generate_assignments(h)
 
         if len(self.ast.holes) == 1:
-            h = self.ast.holes[0]
-            # will return None if there are no more completions
-            next_expr = next(self.generator_states[h.var.name], None)
-            print(next_expr)
-            return {h.var.name: next_expr}
+            return self.get_next_assignment(self.ast.holes[0])
         else:
             raise NotImplementedError("Haven't implemented support for multiple holes yet")
 
@@ -185,7 +192,8 @@ class Synthesizer():
         Returns a map from each hole id in the program `self.ast`
         to an expression (method 3).
 
-        **TODO: write a description of your approach in this method.**
+        Ran out of time unfortunately, but would have liked to try putting all grammars in Chomsky Normal Form
+        to guarantee we dont generate the same expression multiple times
         """
         # TODO : complete this method
         return self.synth_method_1()
