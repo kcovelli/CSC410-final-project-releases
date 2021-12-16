@@ -6,7 +6,7 @@ Fill in this file to complete the synthesis portion
 of the assignment.
 """
 
-from typing import Mapping, Iterator
+from typing import Mapping, Iterator, Set
 from z3 import *
 from lang.ast import *
 
@@ -67,7 +67,7 @@ class Synthesizer():
     # TODO: implement something that allows you to remember which
     # programs have already been generated.
 
-    def do_derivation(self, ex: Expression, gram: Grammar, available_vars: set[Variable]) -> Iterator[Expression]:
+    def do_derivation(self, ex: Expression, gram: Grammar, available_vars: Set[Variable]) -> Iterator[Expression]:
         """
         A generator function which, given an Expression with some non-terminals and a Grammar, eventually generates
         all possible derivations
