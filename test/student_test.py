@@ -11,12 +11,11 @@ from verification.verifier import is_valid
 
 
 class TestStudent(unittest.TestCase):
-    
-    #Trivial test to make sure everything's working properly.
+    # Trivial test to make sure everything's working properly.
     def test_sanity_student(self):
         self.assertTrue(True)
 
-    # Product check with integers. 
+    # Product check with integers.
     def test_example_prod(self):
         filename = '%s/examples/prod.paddle' % Path(
             __file__).parent.parent.absolute()
@@ -141,7 +140,7 @@ class TestStudent(unittest.TestCase):
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
             raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
-        prog : Program = parse(filename)
+        prog: Program = parse(filename)
         try:
             ev = Evaluator({})
             final_constraint_expr = ev.evaluate(prog)
@@ -151,14 +150,14 @@ class TestStudent(unittest.TestCase):
             self.assertFalse(is_valid(final_constraint_expr))
         except:
             self.assertFalse(True, "Exception was raised when verifying %s" % filename)
-    
+
     # Test to verify the results of multiplication operator
     def test_example_multicheck(self):
         filename = '%s/examples/multicheck.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
             raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
-        prog : Program = parse(filename)
+        prog: Program = parse(filename)
         try:
             ev = Evaluator({})
             final_constraint_expr = ev.evaluate(prog)
@@ -168,14 +167,14 @@ class TestStudent(unittest.TestCase):
             self.assertTrue(is_valid(final_constraint_expr))
         except:
             self.assertFalse(True, "Exception was raised when verifying %s" % filename)
-    
+
     # Test to verify the least integer
     def test_example_least(self):
         filename = '%s/examples/least.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
             raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
-        prog : Program = parse(filename)
+        prog: Program = parse(filename)
         try:
             ev = Evaluator({})
             final_constraint_expr = ev.evaluate(prog)
@@ -185,14 +184,14 @@ class TestStudent(unittest.TestCase):
             self.assertTrue(is_valid(final_constraint_expr))
         except:
             self.assertFalse(True, "Exception was raised when verifying %s" % filename)
-    
+
     # Test to check basic bool arithmetic and precedence
     def test_example_arithmetix(self):
         filename = '%s/examples/arithmetix.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
             raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
-        prog : Program = parse(filename)
+        prog: Program = parse(filename)
         try:
             ev = Evaluator({})
             final_constraint_expr = ev.evaluate(prog)
@@ -202,13 +201,14 @@ class TestStudent(unittest.TestCase):
             self.assertFalse(is_valid(final_constraint_expr))
         except:
             self.assertFalse(True, "Exception was raised when verifying %s" % filename)
-    
+
+    # Test to check basic int arithmetic
     def test_example_arithmetix_int(self):
         filename = '%s/examples/arithmetix_int.paddle' % Path(
             __file__).parent.parent.absolute()
         if not os.path.exists(filename):
             raise Exception("TestStudent is looking for %s. Make sure file exists." % filename)
-        prog : Program = parse(filename)
+        prog: Program = parse(filename)
         try:
             ev = Evaluator({})
             final_constraint_expr = ev.evaluate(prog)
