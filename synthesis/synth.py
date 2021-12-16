@@ -6,7 +6,7 @@ Fill in this file to complete the synthesis portion
 of the assignment.
 """
 
-from typing import Mapping, Iterator, Set
+from typing import Mapping, Iterator, Set, Dict
 from z3 import *
 from lang.ast import *
 
@@ -60,6 +60,13 @@ class Synthesizer():
         """
         self.vars_for_hole = {h.var.name: ast.hole_can_use(h.var.name) for h in ast.holes}
         self.generator_states = {}
+        self.ordered_rules = {h.var.name:
+                                  {r.symbol:
+                                       sorted(r.productions, key=lambda p: len(p.children()))
+                                   for r in h.grammar.rules
+                                   }
+                              for h in ast.holes
+                              }
         # The synthesizer is initialized with the program ast it needs
         # to synthesize hole completions for.
         self.ast = ast
@@ -67,7 +74,9 @@ class Synthesizer():
     # TODO: implement something that allows you to remember which
     # programs have already been generated.
 
-    def do_derivation(self, ex: Expression, gram: Grammar, available_vars: Set[Variable]) -> Iterator[Expression]:
+    def do_derivation(self, ex: Expression,
+                      sorted_rules: Dict[Variable, List[Expression]],
+                      available_vars: Set[Variable]) -> Iterator[Expression]:
         """
         A generator function which, given an Expression with some non-terminals and a Grammar, eventually generates
         all possible derivations
@@ -90,35 +99,33 @@ class Synthesizer():
         # note that just because len(ex.uses()) > 0 doesn't mean there must be some non terminals, could be given
         # an expression like (x1+1). ex.uses() would contain x1 even though it's not a non-terminal
         found_valid_rule = False
-        for rule in gram.rules:
+        for symbol, productions in sorted_rules.items():
             # this rule does not apply to this expression
-            if rule.symbol not in ex.uses():
+            if symbol not in ex.uses():
                 continue
             found_valid_rule = True
 
             # if we found a variable we can replace, generate all possible replacements
-            if isinstance(ex, VarExpr) and ex.var.name == rule.symbol.name:
+            if isinstance(ex, VarExpr) and ex.var.name == symbol.name:
                 # TODO: need to make sure we put the terminals first
-                best_order = sorted(rule.productions,
-                                    key=lambda p: len(p.children()))  # TODO: can generate this in __init__
-                for product in best_order:
-                    for d in self.do_derivation(product, gram, available_vars):
+                for product in productions:
+                    for d in self.do_derivation(product, sorted_rules, available_vars):
                         yield d
             else:
                 # recurse on composite expression types
                 if isinstance(ex, Ite):
-                    for c in self.do_derivation(ex.cond, gram, available_vars):
-                        for t in self.do_derivation(ex.true_br, gram, available_vars):
-                            for f in self.do_derivation(ex.false_br, gram, available_vars):
+                    for c in self.do_derivation(ex.cond, sorted_rules, available_vars):
+                        for t in self.do_derivation(ex.true_br, sorted_rules, available_vars):
+                            for f in self.do_derivation(ex.false_br, sorted_rules, available_vars):
                                 yield Ite(c, t, f)
 
                 elif isinstance(ex, BinaryExpr):
-                    for l in self.do_derivation(ex.left_operand, gram, available_vars):
-                        for r in self.do_derivation(ex.right_operand, gram, available_vars):
+                    for l in self.do_derivation(ex.left_operand, sorted_rules, available_vars):
+                        for r in self.do_derivation(ex.right_operand, sorted_rules, available_vars):
                             yield BinaryExpr(ex.operator, l, r)
 
                 elif isinstance(ex, UnaryExpr):
-                    for u in self.do_derivation(ex.operand, gram, available_vars):
+                    for u in self.do_derivation(ex.operand, sorted_rules, available_vars):
                         yield UnaryExpr(ex.operator, u)
 
                 # never should have got here since ex.uses() would be empty
@@ -142,7 +149,8 @@ class Synthesizer():
         """
         # always start from the first production rule
         for product in hole.grammar.rules[0].productions:
-            for assignment in self.do_derivation(product, hole.grammar, self.vars_for_hole[hole.var.name]):
+            h = hole.var.name
+            for assignment in self.do_derivation(product, self.ordered_rules[h], self.vars_for_hole[h]):
                 yield assignment
 
     def synth_method_1(self, ) -> Mapping[str, Expression]:
@@ -160,6 +168,7 @@ class Synthesizer():
             h = self.ast.holes[0]
             # will return None if there are no more completions
             next_expr = next(self.generator_states[h.var.name], None)
+            print(next_expr)
             return {h.var.name: next_expr}
         else:
             raise NotImplementedError("Haven't implemented support for multiple holes yet")
