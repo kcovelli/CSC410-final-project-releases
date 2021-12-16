@@ -90,7 +90,6 @@ class Synthesizer():
             yield ex
             return
 
-
         # if none of the above cases apply, then we can likely apply one of the production rules in gram
         # note that just because len(ex.uses()) > 0 doesn't mean there must be some non terminals, could be given
         # an expression like (x1+1). ex.uses() would contain x1 even though it's not a non-terminal
