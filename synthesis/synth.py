@@ -76,7 +76,8 @@ class Synthesizer():
 
     def do_derivation(self, ex: Expression,
                       sorted_rules: Dict[Variable, List[Expression]],
-                      available_vars: Set[Variable]) -> Iterator[Expression]:
+                      available_vars: Set[Variable],
+                      depth: int = 2) -> Iterator[Expression]:
         """
         A generator function which, given an Expression with some non-terminals and a Grammar, eventually generates
         all possible derivations
@@ -95,6 +96,10 @@ class Synthesizer():
             yield ex
             return
 
+        if depth <= 0:
+            yield ex
+            return
+
         # if none of the above cases apply, then we can likely apply one of the production rules in gram
         # note that just because len(ex.uses()) > 0 doesn't mean there must be some non terminals, could be given
         # an expression like (x1+1). ex.uses() would contain x1 even though it's not a non-terminal
@@ -107,25 +112,26 @@ class Synthesizer():
 
             # if we found a variable we can replace, generate all possible replacements
             if isinstance(ex, VarExpr) and ex.var.name == symbol.name:
-                # TODO: need to make sure we put the terminals first
                 for product in productions:
-                    for d in self.do_derivation(product, sorted_rules, available_vars):
-                        yield d
+                    for d in self.do_derivation(product, sorted_rules, available_vars, depth - 1):
+                        if depth > 0 or len(d.children()) == 0:
+                            yield d
+
             else:
                 # recurse on composite expression types
                 if isinstance(ex, Ite):
-                    for c in self.do_derivation(ex.cond, sorted_rules, available_vars):
-                        for t in self.do_derivation(ex.true_br, sorted_rules, available_vars):
-                            for f in self.do_derivation(ex.false_br, sorted_rules, available_vars):
+                    for c in self.do_derivation(ex.cond, sorted_rules, available_vars, depth):
+                        for t in self.do_derivation(ex.true_br, sorted_rules, available_vars, depth):
+                            for f in self.do_derivation(ex.false_br, sorted_rules, available_vars, depth):
                                 yield Ite(c, t, f)
 
                 elif isinstance(ex, BinaryExpr):
-                    for l in self.do_derivation(ex.left_operand, sorted_rules, available_vars):
-                        for r in self.do_derivation(ex.right_operand, sorted_rules, available_vars):
+                    for l in self.do_derivation(ex.left_operand, sorted_rules, available_vars, depth):
+                        for r in self.do_derivation(ex.right_operand, sorted_rules, available_vars, depth):
                             yield BinaryExpr(ex.operator, l, r)
 
                 elif isinstance(ex, UnaryExpr):
-                    for u in self.do_derivation(ex.operand, sorted_rules, available_vars):
+                    for u in self.do_derivation(ex.operand, sorted_rules, available_vars, depth):
                         yield UnaryExpr(ex.operator, u)
 
                 # never should have got here since ex.uses() would be empty
