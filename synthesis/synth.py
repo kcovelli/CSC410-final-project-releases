@@ -172,7 +172,8 @@ class Synthesizer():
         **TODO: write a description of your approach in this method.**
         """
         # TODO : complete this method
-        raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
+        return self.synth_method_1()
+        # raise Exception("Synth.Synthesizer.synth_method_2 is not implemented.")
 
     def synth_method_3(self, ) -> Mapping[str, Expression]:
         """
@@ -182,4 +183,5 @@ class Synthesizer():
         **TODO: write a description of your approach in this method.**
         """
         # TODO : complete this method
-        raise Exception("Synth.synth_method_3 is not implemented.")
+        return self.synth_method_1()
+        # raise Exception("Synth.synth_method_3 is not implemented.")
