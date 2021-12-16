@@ -23,7 +23,7 @@ by Victor Nicolet and Danya Lette</p>
 of the assignment.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Mapping</span>
+      <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Mapping</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">Dict</span>
 <span class="kn">from</span> <span class="nn">z3</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">lang.ast</span> <span class="kn">import</span> <span class="o">*</span></pre></div>
     </div>
@@ -88,9 +88,7 @@ e.g. <code>prog.hole_can_use("h1")</code> returns the variables that &ldquo;h1&r
       <div class='octowrap'>
         <a class='octothorpe' href='#section-3'>#</a>
       </div>
-      <p>Initialize the Synthesizer.
-The Synthesizer can have a state or other data attributes and
-methods to remember which programs have been synthesized before.</p>
+      <p>TODO: put all grammars in Chomsky Normal Form, will guarantee we don&rsquo;t duplicate any derivations</p>
     </div>
     <div class='code'>
       <div class="highlight"><pre>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ast</span><span class="p">:</span> <span class="n">Program</span><span class="p">):</span></pre></div>
@@ -102,10 +100,20 @@ methods to remember which programs have been synthesized before.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-4'>#</a>
       </div>
-      
+      <p>Initialize the Synthesizer.
+The Synthesizer can have a state or other data attributes and
+methods to remember which programs have been synthesized before.</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="kc">None</span></pre></div>
+      <div class="highlight"><pre>        <span class="bp">self</span><span class="o">.</span><span class="n">vars_for_hole</span> <span class="o">=</span> <span class="p">{</span><span class="n">h</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">ast</span><span class="o">.</span><span class="n">hole_can_use</span><span class="p">(</span><span class="n">h</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">ast</span><span class="o">.</span><span class="n">holes</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generator_states</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ordered_rules</span> <span class="o">=</span> <span class="p">{</span><span class="n">h</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                                  <span class="p">{</span><span class="n">r</span><span class="o">.</span><span class="n">symbol</span><span class="p">:</span>
+                                       <span class="nb">sorted</span><span class="p">(</span><span class="n">r</span><span class="o">.</span><span class="n">productions</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">children</span><span class="p">()))</span>
+                                   <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">h</span><span class="o">.</span><span class="n">grammar</span><span class="o">.</span><span class="n">rules</span>
+                                   <span class="p">}</span>
+                              <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="n">ast</span><span class="o">.</span><span class="n">holes</span>
+                              <span class="p">}</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -140,12 +148,14 @@ programs have already been generated.</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-7'>#</a>
       </div>
-      <p>Returns a map from each hole id in the program <code>self.ast</code>
-to an expression (method 1).</p>
-<p><strong>TODO: write a description of your approach in this method.</strong></p>
+      <p>A generator function which, given an Expression with some non-terminals and a Grammar, eventually generates
+all possible derivations</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">synth_method_1</span><span class="p">(</span><span class="bp">self</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Expression</span><span class="p">]:</span></pre></div>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">do_derivation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ex</span><span class="p">:</span> <span class="n">Expression</span><span class="p">,</span>
+                      <span class="n">sorted_rules</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Variable</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Expression</span><span class="p">]],</span>
+                      <span class="n">available_vars</span><span class="p">:</span> <span class="n">Set</span><span class="p">[</span><span class="n">Variable</span><span class="p">],</span>
+                      <span class="n">depth</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Expression</span><span class="p">]:</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -154,10 +164,10 @@ to an expression (method 1).</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-8'>#</a>
       </div>
-      <p>TODO : complete this method</p>
+      
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Synth.Synthesizer.synth_method_1 is not implemented.&quot;</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -166,12 +176,24 @@ to an expression (method 1).</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-9'>#</a>
       </div>
-      <p>Returns a map from each hole id in the program <code>self.ast</code>
-to an expression (method 2).</p>
-<p><strong>TODO: write a description of your approach in this method.</strong></p>
+      <p>Handle the Var, Integer, or constant cases</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">synth_method_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Expression</span><span class="p">]:</span></pre></div>
+      <div class="highlight"><pre>        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">GrammarVar</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">available_vars</span><span class="p">:</span>
+                <span class="k">yield</span> <span class="n">VarExpr</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">GrammarInteger</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>  <span class="c1"># TODO: make this not stupid</span>
+                <span class="k">yield</span> <span class="n">IntConst</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">uses</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># this is a constant expression so can just return ex</span>
+            <span class="k">yield</span> <span class="n">ex</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">depth</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ex</span>
+            <span class="k">return</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -180,10 +202,13 @@ to an expression (method 2).</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-10'>#</a>
       </div>
-      <p>TODO : complete this method</p>
+      <p>if none of the above cases apply, then we can likely apply one of the production rules in gram
+note that just because len(ex.uses()) &gt; 0 doesn&rsquo;t mean there must be some non terminals, could be given
+an expression like (x1+1). ex.uses() would contain x1 even though it&rsquo;s not a non-terminal</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Synth.Synthesizer.synth_method_2 is not implemented.&quot;</span><span class="p">)</span></pre></div>
+      <div class="highlight"><pre>        <span class="n">found_valid_rule</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">productions</span> <span class="ow">in</span> <span class="n">sorted_rules</span><span class="o">.</span><span class="n">items</span><span class="p">():</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -192,12 +217,12 @@ to an expression (method 2).</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-11'>#</a>
       </div>
-      <p>Returns a map from each hole id in the program <code>self.ast</code>
-to an expression (method 3).</p>
-<p><strong>TODO: write a description of your approach in this method.</strong></p>
+      <p>this rule does not apply to this expression</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">synth_method_3</span><span class="p">(</span><span class="bp">self</span><span class="p">,)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Expression</span><span class="p">]:</span></pre></div>
+      <div class="highlight"><pre>            <span class="k">if</span> <span class="n">symbol</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ex</span><span class="o">.</span><span class="n">uses</span><span class="p">():</span>
+                <span class="k">continue</span>
+            <span class="n">found_valid_rule</span> <span class="o">=</span> <span class="kc">True</span></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
@@ -206,12 +231,235 @@ to an expression (method 3).</p>
       <div class='octowrap'>
         <a class='octothorpe' href='#section-12'>#</a>
       </div>
+      <p>if we found a variable we can replace, generate all possible replacements</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">VarExpr</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ex</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">symbol</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="n">productions</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_derivation</span><span class="p">(</span><span class="n">product</span><span class="p">,</span> <span class="n">sorted_rules</span><span class="p">,</span> <span class="n">available_vars</span><span class="p">,</span> <span class="n">depth</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">depth</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">children</span><span class="p">())</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="k">yield</span> <span class="n">d</span>
+
+            <span class="k">else</span><span class="p">:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-13'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-13'>#</a>
+      </div>
+      <p>recurse on composite expression types</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">Ite</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_derivation</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">cond</span><span class="p">,</span> <span class="n">sorted_rules</span><span class="p">,</span> <span class="n">available_vars</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_derivation</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">true_br</span><span class="p">,</span> <span class="n">sorted_rules</span><span class="p">,</span> <span class="n">available_vars</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+                            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_derivation</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">false_br</span><span class="p">,</span> <span class="n">sorted_rules</span><span class="p">,</span> <span class="n">available_vars</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+                                <span class="k">yield</span> <span class="n">Ite</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">BinaryExpr</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">left</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_derivation</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">left_operand</span><span class="p">,</span> <span class="n">sorted_rules</span><span class="p">,</span> <span class="n">available_vars</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+                        <span class="k">for</span> <span class="n">right</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_derivation</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">right_operand</span><span class="p">,</span> <span class="n">sorted_rules</span><span class="p">,</span> <span class="n">available_vars</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+                            <span class="k">yield</span> <span class="n">BinaryExpr</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span> <span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)</span>
+
+                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">UnaryExpr</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">u</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_derivation</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">operand</span><span class="p">,</span> <span class="n">sorted_rules</span><span class="p">,</span> <span class="n">available_vars</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+                        <span class="k">yield</span> <span class="n">UnaryExpr</span><span class="p">(</span><span class="n">ex</span><span class="o">.</span><span class="n">operator</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-14'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-14'>#</a>
+      </div>
+      <p>never should have got here since ex.uses() would be empty</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>                <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="p">(</span><span class="n">IntConst</span><span class="p">,</span> <span class="n">BoolConst</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="n">ASTException</span><span class="p">(</span><span class="s2">&quot;Somehow tried to do derivation on a constant expression&quot;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">ASTException</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unexpected expression type </span><span class="si">{</span><span class="n">ex</span><span class="o">.</span><span class="vm">__class__</span><span class="p">()</span><span class="si">}</span><span class="s2"> for </span><span class="si">{</span><span class="n">ex</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="k">return</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-15'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-15'>#</a>
+      </div>
+      <p>no rules in the given grammar apply to this expression, so just return the expression</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">if</span> <span class="ow">not</span> <span class="n">found_valid_rule</span><span class="p">:</span>
+            <span class="k">yield</span> <span class="n">ex</span>
+            <span class="k">return</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-16'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-16'>#</a>
+      </div>
+      <p>raise ASTException(f&rdquo;could not replace all non terminals in {ex} with the grammar {gram}&rdquo;)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-17'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-17'>#</a>
+      </div>
+      <p>Generator function that generates all possible assignments for the given hole.
+Assignments will be generated breadth first</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">generate_assignments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hole</span><span class="p">:</span> <span class="n">HoleDeclaration</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Expression</span><span class="p">]:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-18'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-18'>#</a>
+      </div>
+      <p>always start from the first production rule</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">for</span> <span class="n">product</span> <span class="ow">in</span> <span class="n">hole</span><span class="o">.</span><span class="n">grammar</span><span class="o">.</span><span class="n">rules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">productions</span><span class="p">:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">hole</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">for</span> <span class="n">assignment</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_derivation</span><span class="p">(</span><span class="n">product</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ordered_rules</span><span class="p">[</span><span class="n">h</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">vars_for_hole</span><span class="p">[</span><span class="n">h</span><span class="p">]):</span>
+                <span class="k">yield</span> <span class="n">assignment</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-19'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-19'>#</a>
+      </div>
+      <p>Returns a map from each hole id in the program <code>self.ast</code>
+to an expression (method 1).</p>
+<p><strong>TODO: write a description of your approach in this method.</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">synth_method_1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Expression</span><span class="p">]:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-20'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-20'>#</a>
+      </div>
+      
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">for</span> <span class="n">h</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast</span><span class="o">.</span><span class="n">holes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">h</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">generator_states</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">generator_states</span><span class="p">[</span><span class="n">h</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">generate_assignments</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ast</span><span class="o">.</span><span class="n">holes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ast</span><span class="o">.</span><span class="n">holes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-21'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-21'>#</a>
+      </div>
+      <p>will return None if there are no more completions</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>            <span class="n">next_expr</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">generator_states</span><span class="p">[</span><span class="n">h</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">next_expr</span><span class="p">)</span>
+            <span class="k">return</span> <span class="p">{</span><span class="n">h</span><span class="o">.</span><span class="n">var</span><span class="o">.</span><span class="n">name</span><span class="p">:</span> <span class="n">next_expr</span><span class="p">}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Haven&#39;t implemented support for multiple holes yet&quot;</span><span class="p">)</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-22'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-22'>#</a>
+      </div>
+      <p>Returns a map from each hole id in the program <code>self.ast</code>
+to an expression (method 2).</p>
+<p><strong>TODO: write a description of your approach in this method.</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">synth_method_2</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Expression</span><span class="p">]:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-23'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-23'>#</a>
+      </div>
       <p>TODO : complete this method</p>
     </div>
     <div class='code'>
-      <div class="highlight"><pre>        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Synth.synth_method_3 is not implemented.&quot;</span><span class="p">)</span>
-
-</pre></div>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synth_method_1</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-24'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-24'>#</a>
+      </div>
+      <p>raise Exception(&ldquo;Synth.Synthesizer.synth_method_2 is not implemented.&rdquo;)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-25'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-25'>#</a>
+      </div>
+      <p>Returns a map from each hole id in the program <code>self.ast</code>
+to an expression (method 3).</p>
+<p><strong>TODO: write a description of your approach in this method.</strong></p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>    <span class="k">def</span> <span class="nf">synth_method_3</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Mapping</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Expression</span><span class="p">]:</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-26'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-26'>#</a>
+      </div>
+      <p>TODO : complete this method</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">synth_method_1</span><span class="p">()</span></pre></div>
+    </div>
+  </div>
+  <div class='clearall'></div>
+  <div class='section' id='section-27'>
+    <div class='docs'>
+      <div class='octowrap'>
+        <a class='octothorpe' href='#section-27'>#</a>
+      </div>
+      <p>raise Exception(&ldquo;Synth.synth_method_3 is not implemented.&rdquo;)</p>
+    </div>
+    <div class='code'>
+      <div class="highlight"><pre></pre></div>
     </div>
   </div>
   <div class='clearall'></div>
